@@ -1,4 +1,3 @@
-
 generator client {
   provider = "prisma-client-js"
 }
@@ -9,69 +8,81 @@ datasource db {
 }
 
 model Computer {
-  id Int @id @default(autoincrement())
-  dpt_id Int
-  group_id Int
-  network_id Int
-  network_ip_id Int 
-  user String
-  sector String
-  hotsname String?
-  mac String?
-  processor String?
-  mem String?
-  hd String?
-  so String?  
+  id            Int         @id @default(autoincrement())
+  dpt_id        Int
+  group_id      Int
+  network_ip_id String      @unique
+  user          String
+  sector        String?
+  hotsname      String?
+  mac           String?
+  processor     String?
+  mem           String?
+  hd            String?
+  so            String?
+  group         Group       @relation(fields: [group_id], references: [id])
+  ip            Ip_address  @relation(fields: [network_ip_id], references: [network_ip])
+  departament   Departament @relation(fields: [dpt_id], references: [id])
 }
 
 model Group {
-  id Int @id @default(autoincrement())
-  name String
+  id    Int        @id @default(autoincrement())
+  name  String
+  group Computer[]
 }
 
 model Departament {
-  id Int @id @default(autoincrement())
-  name String
+  id        Int        @id @default(autoincrement())
+  name      String
+  Computers Computer[]
+  Printers  Print[]
+  Phones    Phone[]
 }
 
 model Network_address {
-  id Int @id @default(autoincrement())
+  id      Int          @id @default(autoincrement())
   address String
+  Ips     Ip_address[]
 }
 
 model Ip_address {
-  id Int @id @default(autoincrement())
+  id         Int             @id @default(autoincrement())
   network_id Int
-  ip String
-  network_ip String
-  gatway String?
-  dns_one String?
-  dns_two String?
+  ip         String
+  network_ip String          @unique
+  gatway     String?
+  dns_one    String?
+  dns_two    String?
+  network    Network_address @relation(fields: [network_id], references: [id])
+  pc         Computer?
+  printer    Print?
+  phone      Phone?
 }
 
 model Print {
-  id Int @id @default(autoincrement())
-  network_id Int
-  network_ip_id String
-  dpt_id Int ?
-  sector String 
-  hostname String ?
-  model String
-  serial String
-  description String?
-  code String?
+  id            Int         @id @default(autoincrement())
+  network_ip_id String      @unique
+  dpt_id        Int
+  sector        String?
+  hostname      String?
+  model         String
+  serial        String
+  description   String?
+  code          String?
+  ip            Ip_address  @relation(fields: [network_ip_id], references: [network_ip])
+  departament   Departament @relation(fields: [dpt_id], references: [id])
 }
 
 model Phone {
-  id Int @id @default(autoincrement())
-  dpt_id Int?
-  network_id Int
-  network_ip_id String
-  phone_number String
-  sector String?
-  model String?
+  id            Int         @id @default(autoincrement())
+  dpt_id        Int
+  network_ip_id String      @unique
+  phone_number  String
+  sector        String?
+  model         String?
+  ip            Ip_address  @relation(fields: [network_ip_id], references: [network_ip])
+  departament   Departament @relation(fields: [dpt_id], references: [id])
 }
-
 
 enum Role {
   USER
@@ -79,20 +90,8 @@ enum Role {
 }
 
 model Admin {
-  id Int @id @default(autoincrement())
-  name  String
+  id       Int    @id @default(autoincrement())
+  user    String
   password String
-  role Role @default(USER)
+  role     Role   @default(USER)
 }
-
-
-
-
-
-
-
-
-
-
-
-
