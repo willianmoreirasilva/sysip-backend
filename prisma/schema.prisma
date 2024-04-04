@@ -23,12 +23,16 @@ model Computer {
   group         Group       @relation(fields: [group_id], references: [id])
   ip            Ip_address  @relation(fields: [network_ip_id], references: [network_ip])
   departament   Departament @relation(fields: [dpt_id], references: [id])
+
+  @@map("Computers")
 }
 
 model Group {
   id    Int        @id @default(autoincrement())
   name  String
   group Computer[]
+
+   @@map("Groups")
 }
 
 model Departament {
@@ -37,12 +41,16 @@ model Departament {
   Computers Computer[]
   Printers  Print[]
   Phones    Phone[]
+
+   @@map("Departaments")
 }
 
 model Network_address {
   id      Int          @id @default(autoincrement())
   address String
   Ips     Ip_address[]
+
+   @@map("Networks_addresses")
 }
 
 model Ip_address {
@@ -57,6 +65,8 @@ model Ip_address {
   pc         Computer?
   printer    Print?
   phone      Phone?
+
+   @@map("Ips_addresses")
 }
 
 model Print {
@@ -71,6 +81,8 @@ model Print {
   code          String?
   ip            Ip_address  @relation(fields: [network_ip_id], references: [network_ip])
   departament   Departament @relation(fields: [dpt_id], references: [id])
+
+   @@map("Printers")
 }
 
 model Phone {
@@ -82,6 +94,8 @@ model Phone {
   model         String?
   ip            Ip_address  @relation(fields: [network_ip_id], references: [network_ip])
   departament   Departament @relation(fields: [dpt_id], references: [id])
+
+   @@map("Phones")
 }
 
 enum Role {
@@ -91,7 +105,9 @@ enum Role {
 
 model Admin {
   id       Int    @id @default(autoincrement())
-  user    String
+  email    String @unique
   password String
   role     Role   @default(USER)
+
+   @@map("Users_Admins")
 }
