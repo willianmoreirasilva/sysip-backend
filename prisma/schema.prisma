@@ -47,7 +47,7 @@ model Departament {
 
 model Network_address {
   id      Int          @id @default(autoincrement())
-  address String
+  address String @unique
   Ips     Ip_address[]
 
    @@map("Networks_addresses")

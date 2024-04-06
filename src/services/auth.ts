@@ -1,18 +1,23 @@
 import { prisma } from "../libs/prisma"
+import { UserAdmin } from "../types/UserAdmin";
+import { getToday } from "../utils/getToday";
 
-
-export const validateUser = async (email: string, password: string): Promise<boolean | undefined> => {
+export const validateUser = async (email: string, password: string): Promise<UserAdmin | boolean > => {
 
     const user = await prisma.admin.findUnique({
-        where: {
-            email
-        }
+        where: { email }
     })
+    
+    return(user?.email === email && user.password === password);
+        
+}
 
-    if(!user) return false;
+export const createToken = () => {
+    const key = getToday().split('/').join('');
+    return `${process.env.DEFAULT_TOKEN}${key}`
+}
 
-    if(user.password === password) return true;
-
-
-
+export const validateToken = (token: string) => {
+    const currentToken = createToken();
+    return token === currentToken;
 }
