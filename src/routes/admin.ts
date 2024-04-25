@@ -4,6 +4,8 @@ import * as adminUsers from '../controllers/adminUsers';
 import * as networks from '../controllers/networks';
 import * as groups from '../controllers/groups';
 import * as departaments from '../controllers/departaments';
+import * as computers from '../controllers/computers';
+import * as ipAddresses from '../controllers/ipAddresses';
 
 const router = Router();
 
@@ -40,7 +42,16 @@ router.post('/departaments', auth.validate, departaments.addDepartament);
 router.put('/departaments/:id', auth.validate, departaments.updateDepartament);
 router.delete('/departaments/:id', auth.validate, departaments.deleteDepartament);
 
+//Model Computers
+router.get('/computers', auth.validate, computers.getAll);
+router.get('/computers/:id', auth.validate, computers.getOneId);
+router.post('/computers', auth.validate, computers.addComputer);
+router.put('/computers/:id', auth.validate, computers.updateComputer);
 
+// Model AdressesIp
+router.get('/addressesip', auth.validate, ipAddresses.getAll);
+router.get('/addressesip/:id', auth.validate, ipAddresses.getOneId);
+router.delete('/addressesip/:id', auth.validate, ipAddresses.deleteIpId);
 
 
 export default router;

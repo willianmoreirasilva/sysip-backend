@@ -12,9 +12,10 @@ model Computer {
   dpt_id        Int
   group_id      Int
   network_ip_id String      @unique
+  code          String?
   user          String
   sector        String?
-  hotsname      String?
+  hostname      String?
   mac           String?
   processor     String?
   mem           String?
@@ -58,9 +59,6 @@ model Ip_address {
   network_id Int
   ip         String
   network_ip String          @unique
-  gatway     String?
-  dns_one    String?
-  dns_two    String?
   network    Network_address @relation(fields: [network_id], references: [id])
   pc         Computer?
   printer    Print?
@@ -89,6 +87,7 @@ model Phone {
   id            Int         @id @default(autoincrement())
   dpt_id        Int
   network_ip_id String      @unique
+  code          String?
   phone_number  String
   sector        String?
   model         String?

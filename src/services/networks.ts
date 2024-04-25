@@ -17,6 +17,15 @@ export const getOne = async(id: number) => {
 
 }
 
+export const validAddress = async (address: string) => {
+
+    try {
+        return await prisma.network_address.findUnique({where: {address}});
+
+    }catch(err){ return false}
+
+}
+
 type NetworkCreateData = Prisma.Args<typeof prisma.network_address, 'create'>['data'];
 
 export const add = async (data: NetworkCreateData) => {
