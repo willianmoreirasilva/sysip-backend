@@ -1,10 +1,11 @@
 
-import { RequestHandler } from "express";
+import e, { RequestHandler } from "express";
 import { number, string, z } from "zod";
 import * as computers from '../services/computers';
 import * as ipAddresses from '../services/ipAddresses';
 import * as networks from '../services/networks';
 import { separeteAddress } from "../utils/separeteAddress";
+import { deleteIp } from "./ipAddresses";
 
 
 
@@ -112,9 +113,6 @@ export const updateComputer: RequestHandler = async ( req, res ) => {
 }
 
 
-
-
-
 export const addComputer: RequestHandler = async(req, res) => {
    
     const addComputerSchema = z.object({
@@ -159,6 +157,26 @@ export const addComputer: RequestHandler = async(req, res) => {
 
     if(newPC) return res.status(201).json({computer: newPC});
 
-   
     res.json({error: 'Ocorreu um erro'});
+
+}
+
+export const deleteComputer: RequestHandler = async (req, res) => {
+    const { id } = req.params;
+
+    const Computer = await computers.getOnePCId(parseInt(id));
+   
+    if(!Computer) return res.json({error: 'Não Cadastrado'});
+    let deletedIp = Computer.network_ip_id;
+    
+    
+
+    const deletedPc = await computers.remove(parseInt(id));
+    const addressRemove = await ipAddresses.deleteIp(deletedIp);
+
+    if(deletedPc || addressRemove) return res.json([{deletedPc:deletedPc}, {deletediP: addressRemove}]);
+    
+    
+    res.json ({error: 'Ocorreu um erro'});
+
 }

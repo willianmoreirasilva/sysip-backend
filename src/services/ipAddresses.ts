@@ -25,6 +25,12 @@ export const getIp = async(ip: string) => {
     try{
         return await prisma.ip_address.findFirst({where: {
             network_ip: ip
+        }, 
+        include:{
+            pc: true,
+            printer: true,
+            phone: true
+            
         }})
     
        
@@ -45,6 +51,14 @@ export const deleteIpId = async (id: number) => {
     
     try {
         return await prisma.ip_address.delete({where: {id}});
+    } catch (err) {return false}
+
+}
+
+export const deleteIp = async (ip: string) => {
+ 
+    try {
+        return await prisma.ip_address.delete({where: {network_ip : ip}});
     } catch (err) {return false}
 
 }

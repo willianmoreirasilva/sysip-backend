@@ -47,11 +47,14 @@ router.get('/computers', auth.validate, computers.getAll);
 router.get('/computers/:id', auth.validate, computers.getOneId);
 router.post('/computers', auth.validate, computers.addComputer);
 router.put('/computers/:id', auth.validate, computers.updateComputer);
+router.delete('/computers/:id', auth.validate, computers.deleteComputer);
 
 // Model AdressesIp
 router.get('/addressesip', auth.validate, ipAddresses.getAll);
 router.get('/addressesip/:id', auth.validate, ipAddresses.getOneId);
 router.delete('/addressesip/:id', auth.validate, ipAddresses.deleteIpId);
+router.get('/addressesip/search/ip', auth.validate, ipAddresses.searchIp);
+router.delete('/addressesipdelete/:ip', auth.validate, ipAddresses.deleteIp);
 
 
 export default router;

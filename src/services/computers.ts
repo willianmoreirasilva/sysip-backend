@@ -19,6 +19,13 @@ export const getOnePCId = async (id: number) => {
     } catch (err) {return false}
 }
 
+export const getOnePCIp = async (ip: string) => {
+
+    try {
+        return await prisma.computer.findFirst({where: {network_ip_id:ip}})
+    } catch (err) {return false}
+}
+
 
 type ComputerCreateData = Prisma.Args<typeof prisma.computer, 'create'>['data'];
 
@@ -37,4 +44,12 @@ export const update = async ( id: number, data: ComputerUpdateData ) => {
     try {
         return await prisma.computer.update({where: {id}, data});
     } catch (err) {return false}
+}
+
+export const remove = async (id: number) => {
+
+    try {
+        return await prisma.computer.delete({where: {id}});
+    } catch (err) { false }
+
 }
