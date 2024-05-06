@@ -24,8 +24,7 @@ export const getOneId: RequestHandler = async ( req, res ) => {
 }
 
 export const searchIp: RequestHandler = async (req, res ) => {
-
-    
+ 
     const searchIpSchema = z.object({
         ip: string().ip()
     });

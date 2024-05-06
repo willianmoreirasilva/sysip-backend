@@ -14,3 +14,14 @@ export const separeteAddress = (address: string): separateNetworkIp  => {
     return separeteAddress;
 
 }
+
+export const separeteNetwork = (address: string)   => {
+
+    let array = address.split('.');
+    array.pop();
+    const addressNetwork = array.join('.');
+    return addressNetwork;
+
+   
+    
+}

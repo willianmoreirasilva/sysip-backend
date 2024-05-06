@@ -69,30 +69,30 @@ model Ip_address {
 
 model Print {
   id            Int         @id @default(autoincrement())
-  network_ip_id String      @unique
-  dpt_id        Int
+  network_ip_id String?      @unique
+  dpt_id        Int?
   sector        String?
   hostname      String?
   model         String
   serial        String
   description   String?
   code          String?
-  ip            Ip_address  @relation(fields: [network_ip_id], references: [network_ip])
-  departament   Departament @relation(fields: [dpt_id], references: [id])
+  ip            Ip_address?  @relation(fields: [network_ip_id], references: [network_ip])
+  departament   Departament? @relation(fields: [dpt_id], references: [id])
 
    @@map("Printers")
 }
 
 model Phone {
   id            Int         @id @default(autoincrement())
-  dpt_id        Int
+  dpt_id        Int?
   network_ip_id String      @unique
   code          String?
   phone_number  String
   sector        String?
   model         String?
   ip            Ip_address  @relation(fields: [network_ip_id], references: [network_ip])
-  departament   Departament @relation(fields: [dpt_id], references: [id])
+  departament   Departament? @relation(fields: [dpt_id], references: [id])
 
    @@map("Phones")
 }

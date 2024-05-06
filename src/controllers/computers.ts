@@ -1,11 +1,10 @@
 
-import e, { RequestHandler } from "express";
+import { RequestHandler } from "express";
 import { number, string, z } from "zod";
 import * as computers from '../services/computers';
 import * as ipAddresses from '../services/ipAddresses';
 import * as networks from '../services/networks';
-import { separeteAddress } from "../utils/separeteAddress";
-import { deleteIp } from "./ipAddresses";
+import { separeteAddress, separeteNetwork } from "../utils/separeteAddress";
 
 
 
@@ -29,6 +28,55 @@ export const getOneId: RequestHandler = async (req, res ) => {
     res.json({error: "Ocorreu um erro"});
     
 }
+
+export const addComputer: RequestHandler = async(req, res) => {
+   
+    const addComputerSchema = z.object({
+        
+        dpt_id: number(),
+        group_id: number(),
+        network_ip_id: string().ip(),
+        user: string(),
+        sector: string().optional(),
+        hostname: string().optional(),
+        mac: string().regex(/^(([0-9a-f]{2}):){5}([0-9a-f]{2})$/).optional(),
+        processor: string().optional(),
+        mem: string().optional(),
+        hd: string().optional(),
+        so: string().optional()
+        
+    })
+
+    const body = addComputerSchema.safeParse(req.body);
+  
+    if(!body.success) return res.json({error:'Dados Inválidos'});
+
+    
+    const inUseIp = await ipAddresses.getIp(body.data.network_ip_id);
+    if(inUseIp) return res.json({error: 'Endereço de IP em uso'})
+
+    const address = separeteAddress(body.data.network_ip_id);
+
+    const addressNetwork = await networks.validAddress(address.networkAddress);
+  
+    if(!addressNetwork) return res.json({error: 'Endereço de rede inválido para a Organização'})
+
+    const newIp = await ipAddresses.add({
+        network_id: addressNetwork.id,
+        ip: address.IpAddress,
+        network_ip: body.data.network_ip_id
+    });
+
+    if(!newIp) return res.json({error: 'nao foi possível adicionar esse ip'});
+
+    const newPC = await computers.addPc(body.data);
+
+    if(newPC) return res.status(201).json({computer: newPC});
+
+    res.json({error: 'Ocorreu um erro'});
+
+}
+
 
 export const updateComputer: RequestHandler = async ( req, res ) => {
 
@@ -112,55 +160,6 @@ export const updateComputer: RequestHandler = async ( req, res ) => {
     
 }
 
-
-export const addComputer: RequestHandler = async(req, res) => {
-   
-    const addComputerSchema = z.object({
-        
-        dpt_id: number(),
-        group_id: number(),
-        network_ip_id: string().ip(),
-        user: string(),
-        sector: string().optional(),
-        hostname: string().optional(),
-        mac: string().regex(/^(([0-9a-f]{2}):){5}([0-9a-f]{2})$/).optional(),
-        processor: string().optional(),
-        mem: string().optional(),
-        hd: string().optional(),
-        so: string().optional()
-        
-    })
-
-    const body = addComputerSchema.safeParse(req.body);
-  
-    if(!body.success) return res.json({error:'Dados Inválidos'});
-
-    
-    const inUseIp = await ipAddresses.getIp(body.data.network_ip_id);
-    if(inUseIp) return res.json({error: 'Endereço de IP em uso'})
-
-    const address = separeteAddress(body.data.network_ip_id);
-
-    const addressNetwork = await networks.validAddress(address.networkAddress);
-  
-    if(!addressNetwork) return res.json({error: 'Endereço de rede inválido para a Organização'})
-
-    const newIp = await ipAddresses.add({
-        network_id: addressNetwork.id,
-        ip: address.IpAddress,
-        network_ip: body.data.network_ip_id
-    });
-
-    if(!newIp) return res.json({error: 'nao foi possível adicionar esse ip'});
-
-    const newPC = await computers.addPc(body.data);
-
-    if(newPC) return res.status(201).json({computer: newPC});
-
-    res.json({error: 'Ocorreu um erro'});
-
-}
-
 export const deleteComputer: RequestHandler = async (req, res) => {
     const { id } = req.params;
 
@@ -178,5 +177,66 @@ export const deleteComputer: RequestHandler = async (req, res) => {
     
     
     res.json ({error: 'Ocorreu um erro'});
+
+}
+
+export const search: RequestHandler = async (req, res) => {
+
+    const searchSchema = z.object({
+        dpt_id: string().transform(val=> parseInt(val)).optional(),
+        group_id: string().transform(val=> parseInt(val)).optional(),
+        network_id: string().transform(val=> parseInt(val)).optional(),
+        code: string().optional(),
+        user: string().optional(),
+        sector: string().optional(),
+        hostname: string().optional(),
+        mac: string().regex(/^(([0-9a-f]{2}):){5}([0-9a-f]{2})$/).optional(),
+        processor: string().optional(),
+        mem: string().optional(),
+        hd: string().optional(),
+        so: string().optional(),
+        skip: string().transform(val=> parseInt(val)).optional(),
+        take: string().transform(val=> parseInt(val)).optional()
+
+    });
+
+    const query = searchSchema.safeParse(req.query);
+
+    if(!query.success || Object.keys(query.data).length ===0) return res.json({error: 'Dados inválidos'});
+
+
+    
+    let address;
+    if(query.data.network_id){
+        const network  = await networks.getOne(query.data.network_id);
+        if(!network) return res.json({error: 'rede inválida'})
+        address = network? network.address : '';
+        address = separeteNetwork(address);
+        
+    }
+    
+    let data : computers.searchFiltersPc = {}
+    data = {
+        dpt_id: query.data.dpt_id,
+        group_id: query.data.group_id,
+        address,
+        code: query.data.code,
+        user: query.data.user,
+        sector: query.data.sector,
+        hostname: query.data.hostname,
+        mac: query.data.mac,
+        processor: query.data.processor,
+        mem: query.data.mem,
+        hd: query.data.hd,
+        so: query.data.so,
+        skip: query.data.skip,
+        take: query.data.take
+    }
+    
+    const searchComputers = await computers.search(data);
+
+    if(searchComputers) return res.json({computers: searchComputers});
+
+    res.json({error: 'Ocorreu um erro'});
 
 }

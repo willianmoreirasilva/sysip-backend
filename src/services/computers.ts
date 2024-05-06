@@ -53,3 +53,71 @@ export const remove = async (id: number) => {
     } catch (err) { false }
 
 }
+
+ export type searchFiltersPc = {
+    dpt_id?: number;
+    group_id?: number;
+    address?: string;
+    code?: string;
+    user?: string;
+    sector?: string;
+    hostname?: string;
+    mac?: string;
+    processor?: string;
+    mem?: string;
+    hd?: string;
+    so?: string;
+    skip?: number;
+    take?: number; 
+}
+
+export const search = async (data : searchFiltersPc) => {
+
+    try {
+        return await prisma.computer.findMany({
+            where: {
+               
+               dpt_id: data.dpt_id,
+               group_id: data.group_id,
+               network_ip_id: {
+                contains: data.address
+               },
+               code: data.code,
+               user: {
+                contains: data.user,
+                mode: 'insensitive'
+               },
+               sector: {
+                contains: data.sector,
+                mode: 'insensitive'
+               },
+               hostname: {
+                contains: data.hostname,
+                mode: 'insensitive'
+               },
+               mac: data.mac,
+               processor: {
+                contains: data.processor,
+                mode: 'insensitive'
+               },
+               mem: {
+                contains: data.mem,
+                mode: 'insensitive'
+               },
+               hd: {
+                contains: data.hd,
+                mode: 'insensitive'
+               },
+               so: {
+                contains: data.so,
+                mode: 'insensitive'
+               },
+
+            },
+            skip: data.skip,
+            take: data.take
+        }
+        )
+    } catch (err) {return false}
+
+}
