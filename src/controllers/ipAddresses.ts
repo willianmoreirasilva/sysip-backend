@@ -28,10 +28,10 @@ export const searchIp: RequestHandler = async (req, res ) => {
     const searchIpSchema = z.object({
         ip: string().ip()
     });
-
+    
     const query = searchIpSchema.safeParse(req.query);
     if(!query.success) return res.json({error: 'Dados inválidos'});
-
+   
     const address = separeteAddress(query.data.ip);
 
     const addressNetwork = await networks.validAddress(address.networkAddress);
@@ -54,8 +54,10 @@ export const searchIp: RequestHandler = async (req, res ) => {
 
 export const deleteIpId: RequestHandler = async (req, res ) => {
     const { id } = req.params;
+    console.log("ID: ", id)
 
     const address = await ipAddresses.deleteIpId(parseInt(id));
+    console.log(address);
 
     if(address) return res.json({removedIp: address});
 

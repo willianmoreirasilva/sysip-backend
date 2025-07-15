@@ -3,6 +3,8 @@ import * as adminUsers from '../services/adminUsers';
 import { z } from "zod";
 
 
+
+
 export const getAll: RequestHandler = async( req, res ) => {
     const users = await adminUsers.getAll();
     
@@ -33,6 +35,7 @@ export const addUser: RequestHandler = async ( req, res ) => {
 
     if(!body.success) return res.json( {error: 'Dados inválidos' });
 
+    
     const newUser = await adminUsers.add(body.data);
     
     if(newUser) return res.status(201).json({user: newUser});

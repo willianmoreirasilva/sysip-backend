@@ -1,23 +1,55 @@
-import { prisma } from "../libs/prisma"
-import { UserAdmin } from "../types/UserAdmin";
-import { getToday } from "../utils/getToday";
+import { compare } from "bcrypt";
+import { prisma } from "../libs/prisma";
+import JWT from "jsonwebtoken";
+import dotenv from "dotenv";
+import { DecodedToken } from "../types/DecodedToken";
 
-export const validateUser = async (email: string, password: string): Promise<UserAdmin | boolean > => {
+dotenv.config();
 
-    const user = await prisma.admin.findUnique({
-        where: { email }
-    })
-    
-    return(user?.email === email && user.password === password);
-        
-}
+export const validateUser = async (email: string, password: string) => {
+    try {
+        const user = await prisma.admin.findUnique({
+            where: { email },
+        });
 
-export const createToken = () => {
-    const key = getToday().split('/').join('');
-    return `${process.env.DEFAULT_TOKEN}${key}`
-}
+        if (!user || !user.password) {
+            return null;
+        }
 
-export const validateToken = (token: string) => {
-    const currentToken = createToken();
-    return token === currentToken;
-}
+        const isMatch = await compare(password, user.password);
+
+        return isMatch ? user : null;
+    } catch (err) {
+        console.error("Erro em validateUser:", err);
+        return null;
+    }
+};
+
+export const createToken = (id: number, email: string, role: string) => {
+    const token = JWT.sign(
+        { id, email, role },
+        process.env.JWT_SECRET_KEY as string,
+        { expiresIn: "4h" }
+    );
+    return token;
+};
+
+export const saveToken = async (userId: number, token: string) => {
+    try {
+        await prisma.admin.update({
+            where: { id: userId },
+            data: { token },
+        });
+    } catch (err) {
+        console.error("Erro em saveToken:", err);
+    }
+};
+
+export const validateToken = (
+    token: string
+): string | JWT.JwtPayload | undefined => {
+    try {
+        const decoded = JWT.verify(token, process.env.JWT_SECRET_KEY as string);
+        return decoded;
+    } catch (err) {}
+};
