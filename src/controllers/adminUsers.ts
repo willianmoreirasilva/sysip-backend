@@ -1,82 +1,96 @@
 import { RequestHandler } from "express";
-import * as adminUsers from '../services/adminUsers';
+import jwt from "jsonwebtoken";
+import * as adminUsers from "../services/adminUsers";
 import { z } from "zod";
 
-
-
-
-export const getAll: RequestHandler = async( req, res ) => {
+export const getAll: RequestHandler = async (req, res) => {
     const users = await adminUsers.getAll();
-    
-    if (users) return res.json({adminUsers: users});
 
-    res.json({ error: 'Ocorreu um erro'});
-}
+    if (users) return res.json({ adminUsers: users });
 
-export const getAdminUser: RequestHandler = async ( req, res ) => {
+    res.json({ error: "Ocorreu um erro" });
+};
+
+//pegar usuario logado
+export const getMe: RequestHandler = async (req, res) => {
+    const token = req.cookies?.token;
+    if (!token) {
+        return res.status(401).json({ error: "Não autenticado" });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY!) as {
+            id: number;
+            email: string;
+            role: string;
+        };
+
+        // Retornando apenas os campos essenciais do usuário
+        return res.status(200).json({
+            id: decoded.id,
+            email: decoded.email,
+            role: decoded.role,
+        });
+    } catch (err) {
+        return res.status(401).json({ error: "Token inválido" });
+    }
+};
+
+export const getAdminUser: RequestHandler = async (req, res) => {
     const { id } = req.params;
     const user = await adminUsers.getOne(parseInt(id));
 
-    if (user) return res.json({user});
+    if (user) return res.json({ user });
 
-    res.json({ error: 'Ocorreu um erro'});
-}
+    res.json({ error: "Ocorreu um erro" });
+};
 
-export const addUser: RequestHandler = async ( req, res ) => {
-    
+export const addUser: RequestHandler = async (req, res) => {
     const addAdminUserSchema = z.object({
         email: z.string().email(),
         password: z.string(),
-        role: z.enum(['ADMIN', 'USER']).optional()
-       
-    })
+        role: z.enum(["ADMIN", "USER"]).optional(),
+    });
 
     const body = addAdminUserSchema.safeParse(req.body);
 
-    if(!body.success) return res.json( {error: 'Dados inválidos' });
+    if (!body.success) return res.json({ error: "Dados inválidos" });
 
-    
     const newUser = await adminUsers.add(body.data);
-    
-    if(newUser) return res.status(201).json({user: newUser});
 
-    res.json({ error: 'Ocorreu um erro'});
-    
-}
+    if (newUser) return res.status(201).json({ user: newUser });
+
+    res.json({ error: "Ocorreu um erro" });
+};
 
 export const updateUser: RequestHandler = async (req, res) => {
     const { id } = req.params;
-    
+
     const UpdateUserSchema = z.object({
         email: z.string().email().optional(),
         password: z.string().optional(),
-        role: z.enum(['ADMIN', 'USER']).optional()
-    })
+        role: z.enum(["ADMIN", "USER"]).optional(),
+    });
 
     const body = UpdateUserSchema.safeParse(req.body);
 
-    if(!body.success) return res.json({error: 'Dados inválidos'});
+    if (!body.success) return res.json({ error: "Dados inválidos" });
 
     const updateUser = await adminUsers.update(parseInt(id), body.data);
 
-    if(updateUser){
-        return res.json({user: updateUser});
+    if (updateUser) {
+        return res.json({ user: updateUser });
     }
-    
-    res.json({error: 'Ocorreu um erro'});
 
-}
+    res.json({ error: "Ocorreu um erro" });
+};
 
 export const deleteUser: RequestHandler = async (req, res) => {
     const { id } = req.params;
 
     const deleteUser = await adminUsers.remove(parseInt(id));
 
-    if(deleteUser) return res.json({user: deleteUser});
+    if (deleteUser) return res.json({ user: deleteUser });
 
-    res.json({error: 'Ocorreu um erro'});
-
-
-
-
-}
+    res.json({ error: "Ocorreu um erro" });
+};

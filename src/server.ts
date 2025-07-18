@@ -3,6 +3,7 @@ import express from "express";
 import cors from "cors";
 import https from "https";
 import http from "http";
+import cookieParser from "cookie-parser";
 
 import mainRoutes from "./routes/mainrouters";
 
@@ -17,6 +18,8 @@ app.use(
     })
 );
 app.use(express.json());
+app.use(cookieParser());
+
 app.use(express.urlencoded({ extended: true }));
 
 app.all("*", requestIntercepter);

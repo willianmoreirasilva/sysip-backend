@@ -10,9 +10,11 @@ import * as printers from "../controllers/printers";
 import * as phones from "../controllers/phones";
 
 const router = Router();
-
+// login e logout
 router.post("/login", auth.login);
+router.get("/logout", auth.validate, auth.logout);
 
+// route test api
 router.get("/ping", (req, res) => res.json({ pong: true }));
 router.get("/private/ping", auth.validate, (req, res) =>
     res.json({ pong: true, private: true })
@@ -24,6 +26,9 @@ router.get("/admimusers/:id", auth.validate, adminUsers.getAdminUser);
 router.post("/adminusers", auth.validate, adminUsers.addUser);
 router.put("/adminusers/:id", auth.validate, adminUsers.updateUser);
 router.delete("/adminusers/:id", auth.validate, adminUsers.deleteUser);
+
+// get user logged
+router.get("admimusers/me", auth.validate, adminUsers.getMe);
 
 // Model Groups
 router.get("/groups", auth.validate, groups.getAll);

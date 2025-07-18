@@ -1,5 +1,7 @@
 import { RequestHandler } from "express";
 import { z } from "zod";
+import { serialize } from "cookie";
+import jwt from "jsonwebtoken";
 import * as auth from "../services/auth";
 
 export const login: RequestHandler = async (req, res) => {
@@ -42,16 +44,37 @@ export const login: RequestHandler = async (req, res) => {
     }
 };
 
+export const logout: RequestHandler = async (req, res) => {
+    res.setHeader(
+        "Set-Cookie",
+        serialize("token", "", {
+            path: "/",
+            httpOnly: true,
+            sameSite: "lax",
+            expires: new Date(0), // força expiração
+        })
+    );
+
+    res.status(200).json({ message: "Logout realizado com sucesso." });
+};
+
 export const validate: RequestHandler = (req, res, next) => {
-    if (!req.headers.authorization) {
-        return res.status(403).json({ error: "Acesso negado" });
+    const token = req.cookies.token; // pegando o token do cookie
+
+    if (!token) {
+        return res.status(403).json({ error: "Token não fornecido" });
     }
 
-    const [authType, token] = req.headers.authorization.split(" ");
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY!) as {
+            id: number;
+            email: string;
+            role: string;
+        };
 
-    if (authType === "Bearer" && auth.validateToken(token)) {
+        req.user = decoded; // disponibiliza os dados para outras rotas
         next();
-    } else {
-        return res.status(403).json({ error: "Acesso negado" });
+    } catch (err) {
+        return res.status(403).json({ error: "Token inválido ou expirado" });
     }
 };
