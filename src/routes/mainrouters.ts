@@ -28,7 +28,7 @@ router.put("/adminusers/:id", auth.validate, adminUsers.updateUser);
 router.delete("/adminusers/:id", auth.validate, adminUsers.deleteUser);
 
 // get user logged
-router.get("admimusers/me", auth.validate, adminUsers.getMe);
+router.get("/adminusers/me", auth.validate, adminUsers.getMe);
 
 // Model Groups
 router.get("/groups", auth.validate, groups.getAll);

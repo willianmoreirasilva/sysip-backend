@@ -13,27 +13,17 @@ export const getAll: RequestHandler = async (req, res) => {
 
 //pegar usuario logado
 export const getMe: RequestHandler = async (req, res) => {
-    const token = req.cookies?.token;
-    if (!token) {
+    const user = req.user;
+
+    if (!user) {
         return res.status(401).json({ error: "Não autenticado" });
     }
 
-    try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY!) as {
-            id: number;
-            email: string;
-            role: string;
-        };
-
-        // Retornando apenas os campos essenciais do usuário
-        return res.status(200).json({
-            id: decoded.id,
-            email: decoded.email,
-            role: decoded.role,
-        });
-    } catch (err) {
-        return res.status(401).json({ error: "Token inválido" });
-    }
+    return res.status(200).json({
+        id: user.id,
+        email: user.email,
+        role: user.role,
+    });
 };
 
 export const getAdminUser: RequestHandler = async (req, res) => {
